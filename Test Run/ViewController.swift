@@ -12,6 +12,7 @@ class ViewController: UIViewController{
     var names = [String]()
     var tags =  [String]()
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var nameTextField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,8 +26,30 @@ class ViewController: UIViewController{
         tableView.dataSource = self
     }
     
+    @IBAction func actionOnAddNewName(_ sender: UIButton) {
+        if let text = nameTextField.text, text != "" {
+            self.view.endEditing(true)
+            self.addData(name: text)
+        }
+    }
+    
+    
+    func addData(name: String) {
+        networkService.addData(name: name, completion: {  [weak self] (err)  in
+            guard let self = self else { return}
+            if let error = err {
+                print("Failed to fetch courses:", error)
+                return
+            }
+            self.nameTextField.text = ""
+            self.getNamesAndTags()
+        })
+    }
+    
     
     func getNamesAndTags(){
+        names = [String]()
+        tags =  [String]()
         networkService.getJSON {  [weak self] (results,err)  in
             guard let self = self else { return}
             if let error = err {
@@ -46,7 +69,7 @@ class ViewController: UIViewController{
             self.tableView.reloadData()
         }
 
-}
+    }
 
 }
 extension ViewController: UITableViewDelegate, UITableViewDataSource{
